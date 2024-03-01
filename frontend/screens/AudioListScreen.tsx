@@ -11,7 +11,7 @@ import * as FileSystem from "expo-file-system";
 import { useTheme } from "react-native-paper";
 import SwipeableListItem from "../components/SwipeableListItem";
 import { io } from "socket.io-client";
-import { serverUrl } from "../utility/constants";
+import { getServerUrl } from "../utility/helpers";
 
 const AudioListScreen = ({ navigation }) => {
   const [localAudios, setLocalAudios] = useState<string[]>([]);
@@ -35,31 +35,40 @@ const AudioListScreen = ({ navigation }) => {
   }, []);
 
   useEffect(() => {
-    const socketConnection = io(serverUrl);
+  const fetchData = async () => {
+    try {
+      const serverUrl = await getServerUrl();
+      const socketConnection = io(serverUrl);
 
-    socketConnection.on("file_saved", (data) => {
-      console.log("File saved on server:", data);
-      const responseData = data.data;
+      socketConnection.on("file_saved", (data) => {
+        console.log("File saved on server:", data);
+        const responseData = data.data;
 
-      if (
-        responseData &&
-        typeof responseData === "object" &&
-        "hun" in responseData &&
-        "eng" in responseData
-      ) {
-        navigation.navigate("EditScreen", {
-          responseData: {
-            hun: responseData.hun,
-            eng: responseData.eng,
-          },
-          navigateTo: "AudioListScreen",
-        });
+        if (
+          responseData &&
+          typeof responseData === "object" &&
+          "hun" in responseData &&
+          "eng" in responseData
+        ) {
+          navigation.navigate("EditScreen", {
+            responseData: {
+              hun: responseData.hun,
+              eng: responseData.eng,
+            },
+            navigateTo: "AudioListScreen",
+          });
+        }
+      });
+
+        return () => {
+          socketConnection.disconnect();
+        };
+      } catch (error) {
+        console.log("Error in fetching data:", error);
       }
-    });
-
-    return () => {
-      socketConnection.disconnect();
     };
+
+    fetchData();
   }, []);
 
   const handleDeleteAudio = async (audioUri) => {
@@ -99,6 +108,7 @@ const AudioListScreen = ({ navigation }) => {
     });
 
     try {
+      const serverUrl = await getServerUrl()
       const response = await fetch(`${serverUrl}/send-data`, {
         method: "POST",
         body: audioData,

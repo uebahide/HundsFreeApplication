@@ -86,7 +86,10 @@ DATA_FOLDER = './data'
 @app.route('/submit-form', methods=['POST'])
 def submit_form():
     try:
-        form_data = request.json
+        form_datas = request.json
+        name = form_datas.get('name')
+        location = form_datas.get('location')
+        form_data = form_datas.get('payload')
         editedHun = form_data.get('editedHun', '')
 
         words = editedHun.split()
@@ -101,10 +104,10 @@ def submit_form():
 
         
         index = 1
-        file_name = os.path.join(DATA_FOLDER, f"{file_name_part}_{index}.json")
+        file_name = os.path.join(DATA_FOLDER, f"{name}_{location}_{file_name_part}_{index}.json")
         while os.path.exists(file_name):
             index += 1
-            file_name = os.path.join(DATA_FOLDER, f"{file_name_part}_{index}.json")
+            file_name = os.path.join(DATA_FOLDER, f"{name}_{location}_{file_name_part}_{index}.json")
 
         
         with open(file_name, 'w') as file:

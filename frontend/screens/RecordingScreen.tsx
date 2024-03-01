@@ -15,12 +15,18 @@ import {
   createFilename,
   ensureDirectoryExists,
   formatTime,
+  getLocation,
+  getName,
   listAudioFiles,
+  loadLocation,
+  loadName,
+  loadPort,
   saveAudioLocally,
 } from "../utility/helpers";
 import { useTheme } from "react-native-paper";
 import PulsingCircle from "../components/PulsingCircle";
-import { serverUrl } from "../utility/constants";
+import {getServerUrl} from "../utility/helpers";
+
 
 const RecordingScreen = ({ navigation, route }) => {
   const [responseMessage, setResponseMessage] = useState<string | null>("");
@@ -35,7 +41,7 @@ const RecordingScreen = ({ navigation, route }) => {
 
   useEffect(() => {
     const initializeServerUrl = async () => {
-      const url = await serverUrl;
+      const url = await getServerUrl();
       setServerUrlPromise(Promise.resolve(url));
     };
     initializeServerUrl();
@@ -67,9 +73,7 @@ const RecordingScreen = ({ navigation, route }) => {
   }, []);
 
   useEffect(() => {
-    ensureDirectoryExists();
-  
-    serverUrl.then(url => {
+    getServerUrl().then(url => {
       const socketConnection = io(url);
   
       socketConnection.on("file_saved", (data) => {
@@ -127,7 +131,8 @@ const RecordingScreen = ({ navigation, route }) => {
       console.error("Error deleting existing audio files:", error);
     }
 
-    const filename = createFilename();
+    const filename = await createFilename();
+
 
     // Move the recorded audio file to the device's file system
     if (!dirInfo.exists) {
@@ -228,7 +233,7 @@ const RecordingScreen = ({ navigation, route }) => {
     console.log("uri ", uri);
 
     if (uri) {
-      const filename = createFilename();
+      const filename = await createFilename();
       console.log("FILENAME ", filename);
 
       const newUri = `${FileSystem.documentDirectory}${filename}`;

@@ -9,7 +9,7 @@ import {
   Platform,
 } from "react-native";
 import { Button, useTheme } from "react-native-paper";
-import { serverUrl } from "../utility/constants";
+import { getServerUrl, loadLocation, loadName } from "../utility/helpers";
 
 
 
@@ -29,7 +29,7 @@ const EditScreen = ({ route, navigation }) => {
 
   const handleSave = async () => {
     try {
-      const url = await serverUrl;
+      const url = await getServerUrl();
 
       const payload = {
         originalHun: originalHunText,
@@ -38,12 +38,18 @@ const EditScreen = ({ route, navigation }) => {
         editedEng: engText,
       };
 
+      const form_data = {
+        payload: payload,
+        name: await loadName(),
+        location: await loadLocation()
+      }
+
       const response = await fetch(`${url}/submit-form`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify(payload),
+        body: JSON.stringify(form_data),
       });
 
       if (response.ok) {
@@ -54,6 +60,7 @@ const EditScreen = ({ route, navigation }) => {
         throw new Error("Failed to submit edited data");
       }
     } catch (error) {
+      console.log("hello")
       console.error("Error submitting edited data:", error);
     }
   };

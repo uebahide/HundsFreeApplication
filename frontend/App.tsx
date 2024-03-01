@@ -3,7 +3,7 @@ import { useEffect } from "react";
 import { DefaultTheme, PaperProvider } from "react-native-paper";
 import io from "socket.io-client";
 import AppNavigator from "./components/AppNavigator";
-import { serverUrl } from "./utility/constants";
+import { getServerUrl } from "./utility/helpers";
 
 const theme = {
   ...DefaultTheme,
@@ -15,14 +15,12 @@ const theme = {
   },
 };
 
-console.log(serverUrl)
 const App = () => {
   useEffect(() => {
-    console.log("hello")
     const socket = io("serverUrl", {
       transports: ["websocket"],
     });
-
+    
     socket.on("connect", () => {
       console.log("connected to socket server");
     });

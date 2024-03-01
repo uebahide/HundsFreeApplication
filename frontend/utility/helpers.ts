@@ -1,7 +1,7 @@
 import * as FileSystem from "expo-file-system";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 
-export function createFilename() {
+export async function createFilename() {
   const currentDate = new Date();
   const formattedDate = `${currentDate.getFullYear()}_${(
     currentDate.getMonth() + 1
@@ -16,7 +16,9 @@ export function createFilename() {
     .toString()
     .padStart(2, "0")}_${currentDate.getSeconds().toString().padStart(2, "0")}`;
 
-  return `audio_${formattedDate}_${formattedTime}.wav`;
+  const name = await loadName();
+  const location = await loadLocation();
+  return `audio_${name}_${location}_${formattedDate}_${formattedTime}.wav`;
 }
 
 export const formatTime = (timeInSeconds) => {
@@ -108,15 +110,30 @@ export const loadName = async () => {
   }
 };
 
-export const loadLocation = async () => {
-  try {
-    const location = await AsyncStorage.getItem('LOCATION');
-    if (location !== null) {
-      // IPアドレスが保存されている場合は使用する
-      return location;
+  export const loadLocation = async () => {
+    try {
+      const location = await AsyncStorage.getItem('LOCATION');
+      if (location !== null) {
+        // IPアドレスが保存されている場合は使用する
+        return location;
+      }
+      return "";
+    } catch (error) {
+      console.error('Got error during getting the server port:', error);
     }
-    return "";
-  } catch (error) {
-    console.error('Got error during getting the server port:', error);
-  }
-};
+  };
+
+export async function getServerUrl(){
+  const SERVER_IP = await loadServerIP();
+  const SERVER_PORT = await loadPort();
+  return `http://${SERVER_IP}:${SERVER_PORT}`
+}
+
+export async function getName(){
+  const name = await loadName();
+  return name;
+}
+export async function getLocation(){
+  const location = await loadLocation();
+  return location;
+}
